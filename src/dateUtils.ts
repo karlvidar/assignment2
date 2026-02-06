@@ -1,8 +1,18 @@
-import moment from "moment";
 import { DATE_UNIT_TYPES } from "./constants";
+import {
+  addDays,
+  addMonths,
+  addYears,
+  isBefore,
+  isSameDay as isSameDayFns,
+  isWithinInterval,
+  getYear,
+  isAfter,
+} from "date-fns";
 
-export function getCurrentYear() {
-  return moment().year();
+
+export function getCurrentYear(): number {
+  return getYear(new Date());
 }
 
 export function add(date: Date, amount: number, type: DATE_UNIT_TYPES = DATE_UNIT_TYPES.DAYS) {
@@ -12,22 +22,32 @@ export function add(date: Date, amount: number, type: DATE_UNIT_TYPES = DATE_UNI
   if (typeof amount !== 'number' || isNaN(amount)) {
     throw new Error('Invalid amount provided');
   }
-  return moment(date).add(amount, type).toDate();
+
+  switch (type) {
+    case DATE_UNIT_TYPES.DAYS:
+      return addDays(date, amount);
+    case DATE_UNIT_TYPES.MONTHS:
+      return addMonths(date, amount);
+    case DATE_UNIT_TYPES.YEARS:
+      return addYears(date, amount);
+    default:
+      return date;
+  }
 }
 
 export function isWithinRange(date: Date, from: Date, to: Date) {
-  if (moment(from).isAfter(to)) {
+  if (isAfter(from, to)) {
     throw new Error('Invalid range: from date must be before to date');
   }
-  return moment(date).isBetween(from, to);
+  return isWithinInterval(date, { start: from, end: to });
 }
 
 export function isDateBefore(date: Date, compareDate: Date) {
-  return moment(date).isBefore(compareDate);
+  return isBefore(date, compareDate);
 }
 
 export function isSameDay(date: Date, compareDate: Date) {
-  return moment(date).isSame(compareDate, 'day');
+  return isSameDayFns(date, compareDate);
 }
 
 // Simulates fetching holidays from an API
